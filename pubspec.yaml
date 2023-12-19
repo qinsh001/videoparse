@@ -16,6 +16,7 @@ dependencies:
   webview_flutter_web: ^0.2.2+3
   gap: ^3.0.1
   logger: ^2.0.2+1
+  http: ^1.1.2
 
 dev_dependencies:
   flutter_test:
@@ -40,5 +41,8 @@ flutter:
     - family: NotoSansSC
       fonts:
         - asset: assets/fonts/NotoSansSC.ttf
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/Roboto.ttf
 
 

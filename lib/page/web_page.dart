@@ -62,6 +62,19 @@ class _WebPageState extends State<WebPage> {
     isHide.value = document.fullscreenElement != null;
   }
 
+  void _onFullScreenChange2(Event event) {
+    "_onFullScreenChange2=$event".log();
+  }
+
+  void addVideoListener() {
+    final videoNode = document.querySelector(".art-video");
+    final isOk = controller.text.isNotEmpty && videoNode != null;
+    "isOk=$isOk videoNode=$videoNode".log();
+    if (isOk) {
+      videoNode.addEventListener('fullscreenchange', _onFullScreenChange2);
+    }
+  }
+
   @override
   dispose() {
     controller.dispose();
@@ -97,8 +110,8 @@ class _WebPageState extends State<WebPage> {
                         Expanded(
                             child: TextField(
                           controller: controller,
-                          decoration:
-                              const InputDecoration(hintText: "Please enter the video link"),
+                          decoration: const InputDecoration(
+                              hintText: "Please enter the video link"),
                         )),
                         TextButton(
                             onPressed: () {
@@ -133,7 +146,7 @@ class _WebPageState extends State<WebPage> {
             valueListenable: isHide,
           ),
           Expanded(
-              child: controller.text.isNotEmpty && item != null
+              child: controller.text.isNotEmpty
                   ? MyIFrame("${item?.url}${controller.text.trim()}")
                   : const SizedBox.shrink()),
         ],

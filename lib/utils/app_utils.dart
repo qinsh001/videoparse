@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart';
 
-
+import 'package:http/http.dart' as http;
 class AppUtils {
   static bool isUrl(String url) {
     return url.startsWith("http://") || url.startsWith("https://");
@@ -45,5 +45,29 @@ class AppUtils {
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
+  }
+
+  static Future<String> generateShortLink(String longUrl) async {
+    var apiKey = '';
+    var endpoint = 'https://api-ssl.bitly.com/v4/shorten';
+
+    var headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $apiKey',
+    };
+
+    var body = json.encode({
+      'long_url': longUrl,
+    });
+
+    var response = await http.post(Uri.parse(endpoint), headers: headers, body: body);
+
+    if (response.statusCode == 200) {
+      var jsonResponse = json.decode(response.body);
+      var shortLink = jsonResponse['id'];
+      return shortLink;
+    } else {
+      throw Exception('Failed to generate short link');
+    }
   }
 }
