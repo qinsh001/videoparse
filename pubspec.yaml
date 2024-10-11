@@ -22,7 +22,6 @@ dependencies:
   protoc_plugin: ^21.1.2
 
 
-
 dev_dependencies:
   flutter_test:
     sdk: flutter
