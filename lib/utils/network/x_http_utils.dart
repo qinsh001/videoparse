@@ -1,15 +1,37 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
+import 'package:http/browser_client.dart';
+import 'package:http/http.dart';
+
+import 'package:videoparse/utils/log_extensions.dart';
+
 enum HttpRequestReturnType { JSON, STRING, FULLRESPONSE }
+
+const  corsProxyUrl2= "https://aipcors-dv1eaoe-githubityu.globeapp.dev/hello?url=";
+const  corsProxyUrl= "http://localhost:8080/hello?url=";
+class WebHttpClient {
+  static createClient() {
+    if (kIsWeb) {
+      // Option 1: Using BrowserClient
+      return BrowserClient();
+    } else {
+      // For non-web platforms
+      return HttpClient();
+    }
+  }
+}
 
 ///
 /// Helper class for http requests
 ///
 class XHttpUtils {
-  static HttpClient client = HttpClient()
-    ..badCertificateCallback =
-        (X509Certificate cert, String host, int port) => true;
+  // static final client = BrowserClient();
+
+  static final client = WebHttpClient.createClient();
+  // ..badCertificateCallback =
+  //     (X509Certificate cert, String host, int port) => true;
 
   ///
   /// Sends a HTTP GET request to the given [url] with the given [queryParameters] and [headers].
@@ -19,8 +41,29 @@ class XHttpUtils {
       Map<String, String>? headers,
       HttpRequestReturnType returnType = HttpRequestReturnType.JSON}) async {
     var finalUrl = _getUriUrl(url, queryParameters);
+    return kIsWeb
+        ? _getWeb(finalUrl,
+            queryParameters: queryParameters, returnType: returnType)
+        : _getMobile(finalUrl,
+            queryParameters: queryParameters, returnType: returnType);
+  }
 
-    var response = await client.getUrl(finalUrl);
+  static Future<dynamic> _getWeb(Uri url,
+      {Map<String, dynamic>? queryParameters,
+      Map<String, String>? headers,
+      HttpRequestReturnType returnType = HttpRequestReturnType.JSON}) async {
+    var response = await client.get(
+      url,
+      headers: headers,
+    );
+    return _handleResponse(response, returnType);
+  }
+
+  static Future<dynamic> _getMobile(Uri url,
+      {Map<String, dynamic>? queryParameters,
+      Map<String, String>? headers,
+      HttpRequestReturnType returnType = HttpRequestReturnType.JSON}) async {
+    var response = await client.get(url);
     headers?.keys.forEach((key) {
       response.headers.set(key, "${headers[key]}");
     });
@@ -61,6 +104,7 @@ class XHttpUtils {
   static Future<String> getForString(String url,
       {Map<String, dynamic>? queryParameters,
       Map<String, String>? headers}) async {
+    "getForString".log();
     return await _get(url,
         queryParameters: queryParameters,
         headers: headers,
@@ -71,15 +115,15 @@ class XHttpUtils {
   /// Basic function which handle response and decode JSON. Throws [HttpClientException] if status code not 200-290
   ///
   static dynamic _handleResponse(
-      HttpClientResponse response, HttpRequestReturnType returnType) {
+      Response response, HttpRequestReturnType returnType) {
     if (response.statusCode >= 200 && response.statusCode <= 299) {
       switch (returnType) {
         case HttpRequestReturnType.JSON:
-          return json.decode(response.toString());
+          return json.decode(response.body.toString());
         case HttpRequestReturnType.STRING:
-          return response.toString();
+          return response.body.toString();
         case HttpRequestReturnType.FULLRESPONSE:
-          return response;
+          return response.body;
       }
     } else {}
   }

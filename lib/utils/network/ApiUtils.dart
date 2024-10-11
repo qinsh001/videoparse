@@ -3,33 +3,28 @@ import 'dart:convert';
 import 'package:collection/collection.dart';
 import 'package:flutter/services.dart';
 import 'package:logger/logger.dart';
+import 'package:videoparse/model/json_convert_content.dart';
 import 'package:videoparse/model/simple_models.dart';
+import 'package:videoparse/protobuf/videoparse.pb.dart';
 import 'package:videoparse/utils/log_extensions.dart';
 import 'package:videoparse/utils/network/x_http_utils.dart';
 
-
 class ApiUtils {
   ///https://node.video.qq.com/x/api/hot_search?channdlId=0&_=1700632980323
-  static Future<TvboxModel?> getTvBoxData() async {
-    // final result = await HttpUtils.getForJson(
-    //     "https://gitee.com/andoridityu/files/raw/master/xxx.json",headers: {
-    //   "Access-Control-Allow-Origin": "*",
-    //   "Access-Control-Allow-Methods": "POST, GET, OPTIONS, PUT, DELETE, HEAD",
-    //   "Access-Control-Allow-Headers": "X-Requested-With",
-    // });
-    final jsonX = await rootBundle.loadString("assets/json/tv_box.json");
-    "jsonX=${jsonX.substring(0,20)}".log();
-     try{
-       return TvboxModel.fromJson(json.decode(jsonX));
-     }catch(e){
-       print(e);
-     }
+  static Future<VideoParseList> getTvBoxData() async {
+    final url = 'https://gitee.com/andoridityu/files/raw/master/xxx.json';
+    final jsonX = await XHttpUtils.getForJson("$corsProxyUrl$url");
+    return VideoParseList.fromBuffer(Uint8List.fromList(jsonX["data"].cast<int>()));
   }
 
+  static Future<String> testGetUrl(
+      {String url =
+          "https://gitee.com/andoridityu/files/raw/master/xxx.json"}) async {
+    final request = await XHttpUtils.getForString("$corsProxyUrl$url");
+    return request;
+  }
 
   static Future<List<LiveChannelItem>> getLiveChannelItemS() async {
-    // final request = await XHttpUtils.getForFullResponse(
-    //     "https://haoyong.qsh001.top/web/assets/tv.txt");
     final jsonX = await rootBundle.loadString("assets/json/tv.txt");
     // String reply = await request.transform(utf8.decoder).join();
     final list = jsonX.trim().split('\n').mapIndexed((index, e) {

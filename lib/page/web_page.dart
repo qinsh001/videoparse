@@ -1,12 +1,14 @@
-import 'dart:html';
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_fullscreen/flutter_fullscreen.dart';
 import 'package:gap/gap.dart';
 import 'package:videoparse/model/simple_models.dart';
 import 'package:videoparse/utils/app_utils.dart';
 import 'package:videoparse/utils/log_extensions.dart';
 import 'package:videoparse/utils/network/ApiUtils.dart';
 import 'package:videoparse/widget/my_iframe/my_iframe_web.dart';
+
+import '../protobuf/videoparse.pb.dart';
 
 class WebDataPage extends StatelessWidget {
   const WebDataPage({super.key});
@@ -23,7 +25,7 @@ class WebDataPage extends StatelessWidget {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-          final items = snapshot.data!.parses
+          final items = snapshot.data!.list
               .where((element) => AppUtils.isUrl(element.url))
               .toList();
           return WebPage(items: items);
@@ -35,7 +37,7 @@ class WebDataPage extends StatelessWidget {
 }
 
 class WebPage extends StatefulWidget {
-  final List<ParsesItem> items;
+  final List<VideoParseItem> items;
 
   const WebPage({Key? key, required this.items}) : super(key: key);
 
@@ -43,9 +45,9 @@ class WebPage extends StatefulWidget {
   State<WebPage> createState() => _WebPageState();
 }
 
-class _WebPageState extends State<WebPage> {
-  final list = <ParsesItem>[];
-  late ParsesItem item = widget.items.first;
+class _WebPageState extends State<WebPage> with FullScreenListener {
+  final list = <VideoParseItem>[];
+  late VideoParseItem item = widget.items.first;
   late TextEditingController controller;
   late ValueNotifier<bool> isHide;
 
@@ -53,30 +55,22 @@ class _WebPageState extends State<WebPage> {
   void initState() {
     super.initState();
     controller = TextEditingController();
+    FullScreen.addListener(this);
     isHide = ValueNotifier(false);
-    document.addEventListener('fullscreenchange', _onFullScreenChange);
+
   }
 
-  void _onFullScreenChange(Event event) {
-    "_onFullScreenChange=${document.fullscreenElement}".log();
-    isHide.value = document.fullscreenElement != null;
-  }
-
-  void _onFullScreenChange2(Event event) {
-    "_onFullScreenChange2=$event".log();
-  }
-
-  void addVideoListener() {
-    final videoNode = document.querySelector(".art-video");
-    final isOk = controller.text.isNotEmpty && videoNode != null;
-    "isOk=$isOk videoNode=$videoNode".log();
-    if (isOk) {
-      videoNode.addEventListener('fullscreenchange', _onFullScreenChange2);
-    }
-  }
+  void addVideoListener() {}
 
   @override
+  void onFullScreenChanged(bool enabled, SystemUiMode? systemUiMode) {
+    setState(() {
+      isHide.value = enabled;
+    });
+  }
+  @override
   dispose() {
+    FullScreen.removeListener(this);
     controller.dispose();
     isHide.dispose();
     super.dispose();
@@ -98,9 +92,7 @@ class _WebPageState extends State<WebPage> {
                       alignment: Alignment.topRight,
                       child: TextButton(
                         onPressed: () {
-                          // isHide.value = !isHide.value;
-                          document.documentElement?.requestFullscreen();
-                          isHide.value = true;
+                          FullScreen.setFullScreen(true);
                         },
                         child: const Text("FullScreen(ESC exit))"),
                       ),
@@ -147,7 +139,7 @@ class _WebPageState extends State<WebPage> {
           ),
           Expanded(
               child: controller.text.isNotEmpty
-                  ? MyIFrame("${item?.url}${controller.text.trim()}")
+                  ? MyIFrame("${item.url}${controller.text.trim()}")
                   : const SizedBox.shrink()),
         ],
       ),

@@ -338,34 +338,25 @@ class ParsesItem {
     required this.name,
     required this.type,
     required this.url,
-    this.ext,
   });
 
   factory ParsesItem.fromJson(Map json) {
-    final ext = json['ext'];
     return ParsesItem(
       name: json['name'],
       type: json['type'],
       url: json['url'],
-      ext: ext is Map
-          ? ParsesItemExt.fromJson(
-              ext as Map<dynamic, dynamic>,
-            )
-          : null,
     );
   }
 
   final dynamic name;
   final int type;
   final dynamic url;
-  final ParsesItemExt? ext;
 
   Map<dynamic, dynamic> toJson() {
     return {
       'name': name,
       'type': type,
       'url': url,
-      'ext': ext,
     };
   }
 
@@ -373,13 +364,11 @@ class ParsesItem {
     dynamic? name,
     int? type,
     dynamic? url,
-    ParsesItemExt? ext,
   }) {
     return ParsesItem(
       name: name ?? this.name,
       type: type ?? this.type,
       url: url ?? this.url,
-      ext: ext ?? this.ext,
     );
   }
 
@@ -390,108 +379,13 @@ class ParsesItem {
           runtimeType == other.runtimeType &&
           name == other.name &&
           type == other.type &&
-          url == other.url &&
-          ext == other.ext;
+          url == other.url;
 
   @override
   int get hashCode => Object.hashAll([
         name,
         type,
         url,
-        ext,
-      ]);
-}
-
-class ParsesItemExt {
-  ParsesItemExt({
-    required this.flag,
-    this.header,
-  });
-
-  factory ParsesItemExt.fromJson(Map json) {
-    final header = json['header'];
-    return ParsesItemExt(
-      flag: MyJsonConverter.convertListNotNull(json['flag']),
-      header: header is Map
-          ? ParsesItemExtHeader.fromJson(
-              header as Map<dynamic, dynamic>,
-            )
-          : null,
-    );
-  }
-
-  final List<dynamic> flag;
-  final ParsesItemExtHeader? header;
-
-  Map<dynamic, dynamic> toJson() {
-    return {
-      'flag': flag,
-      'header': header,
-    };
-  }
-
-  ParsesItemExt copyWith({
-    List<dynamic>? flag,
-    ParsesItemExtHeader? header,
-  }) {
-    return ParsesItemExt(
-      flag: flag ?? this.flag,
-      header: header ?? this.header,
-    );
-  }
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is ParsesItemExt &&
-          runtimeType == other.runtimeType &&
-          const DeepCollectionEquality().equals(flag, other.flag) &&
-          header == other.header;
-
-  @override
-  int get hashCode => Object.hashAll([
-        const DeepCollectionEquality().hash(flag),
-        header,
-      ]);
-}
-
-class ParsesItemExtHeader {
-  ParsesItemExtHeader({
-    required this.userAgent,
-  });
-
-  factory ParsesItemExtHeader.fromJson(Map json) {
-    return ParsesItemExtHeader(
-      userAgent: json['User-Agent'],
-    );
-  }
-
-  final dynamic userAgent;
-
-  Map<dynamic, dynamic> toJson() {
-    return {
-      'User-Agent': userAgent,
-    };
-  }
-
-  ParsesItemExtHeader copyWith({
-    dynamic? userAgent,
-  }) {
-    return ParsesItemExtHeader(
-      userAgent: userAgent ?? this.userAgent,
-    );
-  }
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is ParsesItemExtHeader &&
-          runtimeType == other.runtimeType &&
-          userAgent == other.userAgent;
-
-  @override
-  int get hashCode => Object.hashAll([
-        userAgent,
       ]);
 }
 

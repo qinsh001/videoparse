@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_fullscreen/flutter_fullscreen.dart';
 import 'package:videoparse/page/web_page.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_web/webview_flutter_web.dart';
 
-void main() {
+Future<void> main() async {
   WebViewPlatform.instance = WebWebViewPlatform();
   WidgetsFlutterBinding.ensureInitialized();
+  await FullScreen.ensureInitialized();
   runApp(const MyApp());
 }
 

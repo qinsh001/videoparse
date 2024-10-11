@@ -1,0 +1,10 @@
+syntax = "proto3";
+message VideoParseItem {
+  string name = 1;
+  int32 type = 2;  // Unique ID number for this person.
+  string url = 3;
+}
+
+message VideoParseList {
+  repeated VideoParseItem list = 1;
+}
