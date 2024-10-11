@@ -9,8 +9,8 @@ import 'package:videoparse/utils/log_extensions.dart';
 
 enum HttpRequestReturnType { JSON, STRING, FULLRESPONSE }
 
-const  corsProxyUrl2= "https://aipcors-dv1eaoe-githubityu.globeapp.dev/hello?url=";
-const  corsProxyUrl= "http://localhost:8080/hello?url=";
+const  corsProxyUrl= "https://aipcors.globeapp.dev/hello?url=";
+const  corsProxyUrl2= "http://localhost:8080/hello?url=";
 class WebHttpClient {
   static createClient() {
     if (kIsWeb) {
