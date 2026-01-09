@@ -8,7 +8,7 @@
 
 
 
-import 'package:videoparse/utils/log_extensions.dart';
+import 'package:videoparse/utils/extensions/log_extensions.dart';
 
 MyJsonConverter jsonConvert = MyJsonConverter();
 

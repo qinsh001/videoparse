@@ -5,12 +5,13 @@ import 'package:flutter/foundation.dart';
 import 'package:http/browser_client.dart';
 import 'package:http/http.dart';
 
-import 'package:videoparse/utils/log_extensions.dart';
+import 'package:videoparse/utils/extensions/log_extensions.dart';
 
 enum HttpRequestReturnType { JSON, STRING, FULLRESPONSE }
 
-const  corsProxyUrl= "https://aipcors.globeapp.dev/hello?url=";
-const  corsProxyUrl2= "http://localhost:8080/hello?url=";
+
+const  corsProxyUrl= "https://wenzhuang.top/api/v1/cros?url=";
+const  corsProxyUrlIQiYi= "";
 class WebHttpClient {
   static createClient() {
     if (kIsWeb) {
@@ -43,9 +44,9 @@ class XHttpUtils {
     var finalUrl = _getUriUrl(url, queryParameters);
     return kIsWeb
         ? _getWeb(finalUrl,
-            queryParameters: queryParameters, returnType: returnType)
+            queryParameters: queryParameters, returnType: returnType,headers: headers)
         : _getMobile(finalUrl,
-            queryParameters: queryParameters, returnType: returnType);
+            queryParameters: queryParameters, returnType: returnType,headers: headers);
   }
 
   static Future<dynamic> _getWeb(Uri url,
@@ -97,6 +98,7 @@ class XHttpUtils {
         returnType: HttpRequestReturnType.JSON) as Map<String, dynamic>;
   }
 
+
   ///
   /// Sends a HTTP GET request to the given [url] with the given [queryParameters] and [headers].
   /// Returns the response as a string.
@@ -104,7 +106,6 @@ class XHttpUtils {
   static Future<String> getForString(String url,
       {Map<String, dynamic>? queryParameters,
       Map<String, String>? headers}) async {
-    "getForString".log();
     return await _get(url,
         queryParameters: queryParameters,
         headers: headers,
@@ -193,5 +194,66 @@ class XHttpUtils {
     } else {
       return queryParameters;
     }
+  }
+  static Future<dynamic> _post(String url,
+      {Map<String, String>? headers,
+        Object? body,
+        HttpRequestReturnType returnType = HttpRequestReturnType.JSON}) async {
+    var finalUrl = Uri.parse(url);
+    return kIsWeb
+        ? _postWeb(finalUrl, headers: headers, body: body, returnType: returnType)
+        : _postMobile(finalUrl, headers: headers, body: body, returnType: returnType);
+  }
+
+  static Future<dynamic> _postWeb(Uri url,
+      {Map<String, String>? headers,
+        Object? body,
+        HttpRequestReturnType returnType = HttpRequestReturnType.JSON}) async {
+    // Web 使用 BrowserClient (http package)
+    var response = await client.post(
+      url,
+      headers: headers,
+      body: body is Map ? json.encode(body) : body,
+    );
+    return _handleResponse(response, returnType);
+  }
+
+  static Future<dynamic> _postMobile(Uri url,
+      {Map<String, String>? headers,
+        Object? body,
+        HttpRequestReturnType returnType = HttpRequestReturnType.JSON}) async {
+    // Mobile 使用 HttpClient (dart:io)
+    final request = await client.postUrl(url);
+
+    // 设置 Header
+    headers?.forEach((key, value) {
+      request.headers.set(key, value);
+    });
+
+    // 写入 Body
+    if (body != null) {
+      final bodyString = body is Map ? json.encode(body) : body.toString();
+      request.write(bodyString);
+    }
+
+    final response = await request.close();
+
+    // 注意：dart:io 的 HttpClientResponse 需要读取流转换成字符串才能传给你的 _handleResponse
+    final responseBody = await response.transform(utf8.decoder).join();
+
+    // 构造一个兼容的 Response 对象传给你的 _handleResponse
+    final compatResponse = Response(responseBody, response.statusCode);
+    return _handleResponse(compatResponse, returnType);
+  }
+
+  ///
+  /// 供外部调用的便捷方法
+  ///
+  static Future<Map<String, dynamic>> postForJson(String url,
+      {Map<String, String>? headers, Object? body}) async {
+    return await _post(url,
+        headers: headers,
+        body: body,
+        returnType: HttpRequestReturnType.JSON) as Map<String, dynamic>;
   }
 }

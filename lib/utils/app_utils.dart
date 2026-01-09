@@ -1,8 +1,12 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/services.dart';
 
 import 'package:http/http.dart' as http;
+import 'package:videoparse/model/simple_models.dart';
+import 'package:videoparse/utils/extensions/log_extensions.dart';
+
 class AppUtils {
   static bool isUrl(String url) {
     return url.startsWith("http://") || url.startsWith("https://");
@@ -32,20 +36,9 @@ class AppUtils {
       }
     }
     String json = jsonEncode(playlist);
-
     return json;
-    print('Conversion complete. JSON file saved at $json');
   }
 
-
-   static Future<void> fullScreen() async {
-    await SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
-    // 隐藏状态栏和导航栏
-    await SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
-  }
 
   static Future<String> generateShortLink(String longUrl) async {
     var apiKey = '';
@@ -60,7 +53,8 @@ class AppUtils {
       'long_url': longUrl,
     });
 
-    var response = await http.post(Uri.parse(endpoint), headers: headers, body: body);
+    var response =
+        await http.post(Uri.parse(endpoint), headers: headers, body: body);
 
     if (response.statusCode == 200) {
       var jsonResponse = json.decode(response.body);
@@ -70,4 +64,5 @@ class AppUtils {
       throw Exception('Failed to generate short link');
     }
   }
+
 }
